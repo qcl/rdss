@@ -3,3 +3,4 @@ vm: true
 
 skip_files:
     - ^(.*/)?.*/node_modules/.*$
+    - npm-debug.log
