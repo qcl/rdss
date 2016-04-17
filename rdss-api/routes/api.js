@@ -77,7 +77,7 @@ router.get('/endDate', function(req, res, next) {
         res.send({
             "success": true,
             "startDate": getDateString(startDate),
-            "discount": 30,
+            "discount": discount,
             "endDate":getDateString(endDate),
             "stage": stage,
             "today": getDateString(today),
