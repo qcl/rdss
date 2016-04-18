@@ -40,6 +40,7 @@ format_remain_from_resp()
 }
 
 
+check_command curl
 check_command jq
 
 while [ $# -gt 0 ]; do
