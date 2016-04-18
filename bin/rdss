@@ -1,0 +1,116 @@
+#!/usr/bin/env sh
+
+API_BASE_URL="http://rdss-api.appspot.com/api/"
+API_NAME="endDate"
+API_PARAM_START_DATE="startDate"
+API_PARAM_DISCOUNT="discount"
+
+json=
+start_date=
+discount=0
+
+check_command()
+{
+    command -v "$1" > /dev/null 2>&1 || {
+    echo >&2 "$1 is required but it is not istalled."
+    exit 1
+}
+}
+
+
+json_get_field()
+{
+    echo "$1" | jq ".$2" | sed 's/^"\(.*\)"$/\1/'
+}
+
+
+format_day()
+{
+    printf "%4d day(s)" "$1"
+}
+
+
+format_remain_from_resp()
+{
+    remain=$(json_get_field "$1" "formattedRemain")
+    year=$(json_get_field "${remain}" year)
+    month=$(json_get_field "${remain}" month)
+    day=$(json_get_field "${remain}" date)
+    echo "${year} year(s), ${month} month(s), and ${day} day(s)"
+}
+
+
+check_command jq
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --help)
+            echo "Usage: rdss [OPTIONS]
+        --help      show this help
+        --start     starting date with format YYYY-MM-DD
+        --discount  the deduction in days
+        --json      print json response instead of human readable output"
+            exit 0
+            ;;
+        --start)
+            shift
+            start_date="$1"
+            shift
+            ;;
+        --json)
+            json=1
+            shift
+            ;;
+        --discount)
+            shift
+            discount="$1"
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+if [ -z "${start_date}" ]; then
+    echo "--start is needed"
+    exit 1
+fi
+
+api="${API_BASE_URL}${API_NAME}?${API_PARAM_START_DATE}=${start_date}"
+if [ ${discount} -gt 0 ]; then
+    api="${api}&${API_PARAM_DISCOUNT}=${discount}"
+fi
+
+resp=$(curl -sf "${api}")
+curl_ret=$?
+if [ "${curl_ret}" -ne 0 ]; then
+    echo "Curl failed with exit code ${curl_ret}"
+    exit 2
+fi
+
+success=$(json_get_field "${resp}" "success")
+if [ "${success}" != "true" ]; then
+    message=$(json_get_field "${resp}" "message")
+    echo "Rdss api failed: ${message}"
+    exit 3
+fi
+
+if [ -n "${json}" ]; then
+    echo "${resp}"
+    exit 0
+fi
+
+echo "Today     : $(json_get_field "${resp}" today)"
+echo "At stage  : $(json_get_field "${resp}" stage)"
+echo ""
+echo "Start date: $(json_get_field "${resp}" startDate)"
+echo "End date  : $(json_get_field "${resp}" endDate)"
+echo "Discount  : $(json_get_field "${resp}" discount)"
+echo ""
+total=$(json_get_field "${resp}" total)
+passed=$(json_get_field "${resp}" passed)
+passed_ratio=$(expr ${passed} \* 100 / ${total})
+echo "Total     : $(format_day $(json_get_field "${resp}" total))"
+echo "Passed    : $(format_day $(json_get_field "${resp}" passed)) [${passed_ratio}%]"
+echo "Remain    : $(format_day $(json_get_field "${resp}" remain)) = $(format_remain_from_resp "${resp}")"
