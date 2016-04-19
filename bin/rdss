@@ -14,7 +14,7 @@ check_command()
     command -v "$1" > /dev/null 2>&1 || {
     echo >&2 "$1 is required but it is not istalled."
     exit 1
-}
+    }
 }
 
 
@@ -40,6 +40,7 @@ format_remain_from_resp()
 }
 
 
+check_command curl
 check_command jq
 
 while [ $# -gt 0 ]; do
