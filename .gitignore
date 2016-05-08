@@ -1,1 +1,5 @@
 *.swp
+
+# do not commit node_modules directory, use `npm install` to keep it up to date
+node_modules/*
+npm-debug.log
