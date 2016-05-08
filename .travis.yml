@@ -8,3 +8,4 @@ deploy:
     provider: gae
     keyfile: ./rdss-api-gae.json
     project: rdss-api
+    no_promote: true
