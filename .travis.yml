@@ -10,6 +10,11 @@ script: "echo 'nothing to test for now.'"
 before_install:
 - openssl aes-256-cbc -K $encrypted_938639410c7c_key -iv $encrypted_938639410c7c_iv
   -in rdss-api-gae.json.enc -out rdss-api-gae.json -d
+
+# https://code.google.com/p/google-cloud-sdk/issues/detail?id=727
+#before_deploy:
+#- gcloud config set app/use_gsutil true
+
 deploy:
     provider: gae
     keyfile: ./rdss-api-gae.json
