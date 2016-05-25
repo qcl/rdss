@@ -9,21 +9,23 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['pyjade.ext.jinja.PyJadeExtension'],
     autoescape=True)
 
+def handle_404(request, response, exception):
+    template = JINJA_ENVIRONMENT.get_template('error.jade')
+    response.write(template.render({'message': exception,
+                                    'error': {
+                                        'status': 404
+                                    }
+                                    }))
+    response.set_status(404)
 
-class JadeHandler(webapp2.RequestHandler):
-    @staticmethod
-    def jade_factory(app):
-        j = jinja2.Jinja2(app)
-        j.environment.add_extension('pyjade.ext.jinja.PyJadeExtension')
-        return j
-
-    @webapp2.cached_property
-    def jinja2(self):
-        return jinja2.get_jinja2(app=self.app, factory=JadeHandler.jade_factory)
-
-    def render_response(self, _template, **context):
-        rv = self.jinja2.render_template(_template, **context)
-        self.response.write(rv)
+def handle_500(request, response, exception):
+    template = JINJA_ENVIRONMENT.get_template('error.jade')
+    response.write(template.render({'message': exception,
+                                    'error': {
+                                        'status': 500
+                                    }
+                                    }))
+    response.set_status(500)
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -33,3 +35,6 @@ class MainHandler(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
 ], debug=True)
+
+app.error_handlers[404] = handle_404
+app.error_handlers[500] = handle_500
