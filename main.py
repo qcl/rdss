@@ -32,8 +32,22 @@ class MainHandler(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('index.jade')
         self.response.write(template.render({'title':'RDSS API'}))
 
+class RDSSAPIendDateHandeler(webapp2.RequestHandler):
+    def get(self):
+        startDate = self.request.get('startDate', None)
+        discount = self.request.get('discount', 0)
+
+        self.response.headers['Content-Type'] = 'application/json'
+
+        if startDate == None:
+            self.response.write('{"success":false}')
+        else:
+            # TODO
+            self.response.write('{"success":true}')
+
 app = webapp2.WSGIApplication([
-    ('/', MainHandler)
+    ('/', MainHandler),
+    ('/api/endDate', RDSSAPIendDateHandeler)
 ], debug=True)
 
 app.error_handlers[404] = handle_404
