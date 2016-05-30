@@ -3,6 +3,8 @@
 import os
 import jinja2
 import webapp2
+import json
+from datetime import date, timedelta
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__),'views')),
@@ -34,16 +36,39 @@ class MainHandler(webapp2.RequestHandler):
 
 class RDSSAPIendDateHandeler(webapp2.RequestHandler):
     def get(self):
+        result = {
+            "success": False
+        }
+
         startDate = self.request.get('startDate', None)
-        discount = self.request.get('discount', 0)
+        discount = int(self.request.get('discount', 0))
 
+        try:
+            today = date.today()
+            startYear, startMonth, startDay = startDate.split('-')
+            startDate = date(int(startYear), int(startMonth), int(startDay))
+            endDate = startDate.replace(int(startYear) + 3) - timedelta(discount)
+
+            timeDiff = endDate - today
+            totalDiff = endDate - startDate
+            print timeDiff.days
+
+            result['startDate'] = str(startDate)
+            result['endDate'] = str(endDate)
+            result['today'] = str(today)
+            result['discount'] = discount
+            result['total'] = totalDiff.days
+            result['remain'] = timeDiff.days
+            result['passed'] = result['total'] - result['remain']
+
+            result['success'] = True
+
+        except:
+            pass
+
+        
         self.response.headers['Content-Type'] = 'application/json'
-
-        if startDate == None:
-            self.response.write('{"success":false}')
-        else:
-            # TODO
-            self.response.write('{"success":true}')
+        self.response.write( json.dumps(result) )
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
