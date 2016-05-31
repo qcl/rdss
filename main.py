@@ -46,12 +46,32 @@ class RDSSAPIendDateHandeler(webapp2.RequestHandler):
         try:
             today = date.today()
             startYear, startMonth, startDay = startDate.split('-')
-            startDate = date(int(startYear), int(startMonth), int(startDay))
-            endDate = startDate.replace(int(startYear) + 3) - timedelta(discount)
+            startYear = int(startYear)
+            startMonth = int(startMonth)
+            startDay = int(startDay)
+            startDate = date(startYear, startMonth, startDay)
+            if startMonth == 2 and startDay == 29:
+                endDate = startDate.replace(startYear + 3, startMonth, startDay - 1) - timedelta(discount)
+            else:
+                endDate = startDate.replace(startYear + 3) - timedelta(discount)
+
+            phase1endDate = startDate + timedelta(7 * 4)
+            phase2endDate = endDate.replace(endDate.year - 2)
+
+            phase = 0
+            if today < startDate:
+                phase = 0
+            elif today < phase1endDate:
+                phase = 1
+            elif today < phase2endDate:
+                phase = 2
+            elif today < endDate:
+                phase = 3
+            else:
+                phase = 4
 
             timeDiff = endDate - today
             totalDiff = endDate - startDate
-            print timeDiff.days
 
             result['startDate'] = str(startDate)
             result['endDate'] = str(endDate)
@@ -60,6 +80,12 @@ class RDSSAPIendDateHandeler(webapp2.RequestHandler):
             result['total'] = totalDiff.days
             result['remain'] = timeDiff.days
             result['passed'] = result['total'] - result['remain']
+            result['stage'] = phase
+            result['formattedRemain'] = {
+                "year": timeDiff.days / 365,
+                "month": (timeDiff.days % 365) / 30 ,
+                "date": (timeDiff.days % 365) % 30
+            }
 
             result['success'] = True
 
