@@ -50,13 +50,17 @@ class RDSSAPIendDateHandeler(webapp2.RequestHandler):
             startMonth = int(startMonth)
             startDay = int(startDay)
             startDate = date(startYear, startMonth, startDay)
-            if startMonth == 2 and startDay == 29:
+            if startMonth == 2 and startDay == 29:  # Special case
                 endDate = startDate.replace(startYear + 3, startMonth, startDay - 1) - timedelta(discount)
             else:
                 endDate = startDate.replace(startYear + 3) - timedelta(discount)
 
             phase1endDate = startDate + timedelta(7 * 4)
-            phase2endDate = endDate.replace(endDate.year - 2)
+
+            if endDate.month == 2 and endDate.day == 29:    # Special case
+                phase2endDate = endDate.replace(endDate.year - 2, endDate.month, endDate.day - 1)
+            else:
+                phase2endDate = endDate.replace(endDate.year - 2)
 
             phase = 0
             if today < startDate:
