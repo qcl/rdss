@@ -2,8 +2,7 @@ language: python
 python:
 - "2.7"
 # install dependency
-# install: "pip install -r requirements.txt"
-install: "echo 'nothing to install for now.'"
+install: pip install -r requirements.txt
 # run tests
 # script: nosetests
 script: "echo 'nothing to test for now.'"
