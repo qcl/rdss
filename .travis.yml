@@ -1,9 +1,7 @@
 language: python
 python:
-- "2.7"
-# install dependency
+    - "2.7"
 install: pip install -r requirements.txt
-script: "echo 'nothing to test for now.'"
 before_install: ./before_install.sh
 script: py.test tests
 
